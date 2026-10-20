@@ -1,103 +1,98 @@
-# stock-markets  
 # 📈 Pakistan Stock Market (PSX) Closing Price Prediction
 
-A machine learning project that predicts the **closing price** of Pakistan Stock Exchange (PSX) stocks using a **Decision Tree Regressor**, with a simple **Streamlit** web app for making predictions from a CSV file.
+Predicts the **closing price** of Pakistan Stock Exchange (PSX) stocks using a **Decision Tree Regressor**. A **Streamlit** web app lets you upload a CSV and get predictions.
 
-**Live app:** _add your Streamlit app link here_
-
----
-
-## 📌 Project Overview
-
-- **Goal:** Predict the closing price of PSX stocks from historical market data.
-- **Dataset:** Pakistan Stock Market Data 2017–2025 (`compiled_psx_historical_2017_2025.csv`) from Kaggle, by `fayaznoor10`.
-- **Model:** Scikit-learn `Pipeline` (preprocessing + Decision Tree Regressor).
-- **Training platform:** Kaggle Notebook.
-- **App:** Streamlit (deployed on Streamlit Community Cloud).
+**Live app:** _paste your Streamlit link here after deployment_
 
 ---
 
-## 🧠 How the Model Works
+## 📊 Model Results (20% test data, 168,066 rows)
 
-**1. Data cleaning**
-- Column names are stripped of extra spaces.
-- Infinite values are converted to missing values.
-- Rows with a missing closing price are removed, and duplicate rows are dropped.
+| Metric | Value |
+|--------|-------|
+| MAE | 2.82 |
+| RMSE | 88.64 |
+| R² Score | 0.990 (99.0%) |
 
-**2. Feature preparation**
-- Date/time columns are split into `year`, `month` and `day` features.
-- Columns that directly reveal the target (for example `change`, `daily_return`) are removed to avoid **target leakage**.
-- Numeric-looking text columns are converted to numbers.
-
-**3. Preprocessing (inside the Pipeline)**
-- Numeric columns: median imputation.
-- Categorical columns: most-frequent imputation and One-Hot Encoding.
-
-**4. Model**
-
-```python
-DecisionTreeRegressor(
-    max_depth=10,
-    min_samples_split=10,
-    min_samples_leaf=5,
-    random_state=42
-)
-```
-
-**5. Train/test split:** 80% training, 20% testing (`random_state=42`).
-
-**6. Evaluation metrics:** MAE, MSE, RMSE and R² score. Results are saved in `psx_model_evaluation.csv`.
+Full numbers are in `psx_model_evaluation.csv`.
 
 ---
 
-## 📂 Repository Structure
+## 🧠 How It Works
+
+- **Dataset:** Pakistan Stock Market Data 2017–2025 (Kaggle, `fayaznoor10`).
+- **Input features:** `SYMBOL`, `LDCP`, `OPEN`, `HIGH`, `LOW`, `VOLUME`, `DATE`
+- **Target:** `CLOSE` (closing price)
+- **Preprocessing:** `DATE` is split into year, month and day. Leakage columns such as `CHANGE` are removed. Numeric columns use median imputation. `SYMBOL` is one-hot encoded.
+- **Model:** `DecisionTreeRegressor(max_depth=10, min_samples_split=10, min_samples_leaf=5, random_state=42)` inside a scikit-learn `Pipeline`.
+- **Split:** 80% training, 20% testing.
+
+---
+
+## 📂 Repository Files
 
 ```
-├── app.py                        # Streamlit web app
-├── requirements.txt              # Python dependencies
-├── psx_decision_tree_model.pkl   # Trained model (scikit-learn Pipeline)
-├── psx_model_evaluation.csv      # MAE, MSE, RMSE, R² on the test set
-├── psx_test_predictions.csv      # Actual vs predicted values on the test set
-├── __notebook_source__.ipynb     # Kaggle notebook (EDA, training, evaluation)
+├── app.py                        # Streamlit app
+├── requirements.txt              # Dependencies (exact name required)
+├── psx_decision_tree_model.pkl   # Trained model
+├── psx_model_evaluation.csv      # Test metrics
+├── psx_test_predictions.csv      # Actual vs predicted on test data
+├── __notebook_source__.ipynb     # Kaggle notebook (EDA + training)
 └── README.md
 ```
 
 ---
 
-## 🚀 Run the App
+## 📦 requirements.txt
 
-**Online:** open the Streamlit link above, upload a CSV, and view the predictions.
+The file must be named exactly `requirements.txt` and contain:
 
-**Locally:**
+```
+streamlit
+joblib
+scikit-learn==1.6.1
+pandas
+numpy
+```
+
+> ⚠️ The model was trained with **scikit-learn 1.6.1**. A different version gives errors like `_RemainderColsList` not found, so do not remove this pin.
+
+---
+
+## 🚀 Deploy on Streamlit Community Cloud
+
+1. Make sure these 3 files are in the **root** of the GitHub repo: `app.py`, `psx_decision_tree_model.pkl`, `requirements.txt`.
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
+3. Click **Create app** and choose **Deploy a public app from GitHub**.
+4. Fill in:
+   - **Repository:** `your-username/stockmarkets`
+   - **Branch:** `main`
+   - **Main file path:** `app.py`
+5. Open **Advanced settings** and set **Python version** to `3.11`.
+6. Click **Deploy** and wait a few minutes while the packages install.
+7. Copy the app link and paste it at the top of this README.
+
+**If the app shows an error:** open **Manage app** (bottom right) and read the logs. After fixing a file on GitHub, use **Manage app → Reboot app**.
+
+---
+
+## 💻 Run Locally
 
 ```bash
-git clone https://github.com/<your-username>/stockmarkets.git
+git clone https://github.com/your-username/stockmarkets.git
 cd stockmarkets
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-### Using the app
-
-1. Upload a CSV file that has the **same columns** as the training dataset.
-2. The app applies the same cleaning steps used in training.
-3. The predicted closing prices are shown in a table.
-4. If your CSV also contains the real closing price, the app shows MAE, RMSE, R² and an Actual vs Predicted chart.
-5. Download the predictions as a CSV file.
-
 ---
 
-## 📦 Requirements
+## 🧪 Using the App
 
-```
-streamlit
-joblib==1.6.0
-scikit-learn==1.6.1
-pandas==2.3.3
-numpy==2.1.3
-```
-
-> ⚠️ **Important:** The model was trained with **scikit-learn 1.6.1**. Loading the `.pkl` file with a different scikit-learn version can cause errors such as `_RemainderColsList` not found. Keep the version pinned.
+1. Upload a CSV with the columns `DATE, SYMBOL, LDCP, OPEN, HIGH, LOW, VOLUME` (a `CLOSE` column is optional).
+2. The predicted closing prices appear in a table.
+3. If `CLOSE` is present, the app also shows MAE, RMSE, R² and an Actual vs Predicted chart.
+4. Download the results as a CSV.
 
 ---
 
@@ -107,14 +102,6 @@ Python · Pandas · NumPy · Scikit-learn · Joblib · Matplotlib · Streamlit
 
 ---
 
-## 👤 Author
-
-**Muhammad Naqi**
-BS Robotics, Section 2A
-Course: Programming Fundamentals
-
----
-
 ## ⚠️ Disclaimer
 
-This project is for **educational purposes only**. Predictions are not financial advice and should not be used for real trading decisions.
+For educational purposes only. Predictions are not financial advice.
